@@ -15,8 +15,6 @@ from typing import List
 
 DEBUG = False
 
-PICKLE_FILENAME = "data_{}.p"
-
 LARGE_DIGITS = {
     "0": [
         " 000000 ",
@@ -118,10 +116,8 @@ def printLarge(toPrint):
     print("")
     print("")
     printList = [LARGE_DIGITS[str(s)] for s in toPrint]
-    for lines in zip(*printList):
-        for digitLine in lines:
-            print(digitLine, end="")
-        print("")
+    for lineParts in zip(*printList):
+        print("".join(lineParts))
     print("")
     print("")
 
@@ -135,7 +131,7 @@ def doSequence(codeList):
             digit = remainingDigits[random.randrange(0, len(remainingDigits))]
             if lst[digit]:
                 value = random.randint(1, min(lst[digit] // 2 + 1, 4))
-                input("Drehe " + str(digit + 1) + " um " + str(value) + " Stellen. ")
+                input(f"Drehe {digit + 1} um {value} Stellen. ")
                 lst[digit] -= value
             else:
                 remainingDigits.remove(digit)
@@ -155,10 +151,10 @@ def crypt(data: bytes) -> bytes:
 
 
 class Lock:
-    def __init__(self, schloss_number: str):
+    def __init__(self, lockID: str):
         self.status: Status = None
-        self.schloss_nummer = schloss_number
-        self.filename = PICKLE_FILENAME.replace("{}", schloss_number)
+        self.lockID = lockID
+        self.filename = f"data_{lockID}.p"
         self.status = self._load(self.filename)
 
     def __str__(self) -> str:
@@ -230,10 +226,7 @@ class Lock:
 
             showTimer = "doit"
             while showTimer not in "1yj0n":
-                try:
-                    showTimer = str(input("Verbleibende Zeit anzeigen (J/N): ")).lower()
-                except:
-                    pass
+                showTimer = str(input("Verbleibende Zeit anzeigen (J/N): ")).lower()
             if showTimer in "0n":
                 status.showTimer = False
             else:
@@ -277,7 +270,7 @@ class Lock:
                 else:
                     sleep(1)
         except KeyboardInterrupt:
-            print("Skript wird aus Userwunsch gestoppt")
+            print("Skript wird auf Benutzerwunsch hin gestoppt. ")
             sys.exit(0)
 
         printLarge(self.status.code)
@@ -285,7 +278,7 @@ class Lock:
         done = "nope"
         while done.lower() != "ok":
             done = input(
-                "Schloss entsperren. Code wird anschließend gelöscht (OK tippen zum Löschen) "
+                "Schloss entsperren. OK eingeben um die Session samt Code anschließend zu löschen. "
             )
         remove(self.filename)
         print("Gelöscht. Bereit für eine neue Runde!")
@@ -294,7 +287,7 @@ class Lock:
 def main():
     random.seed()
 
-    lock_number = input("Bitte gib die Schlossnummer ein: ")
+    lock_number = input("Bitte gib eine(n) Schlossnummer oder -namen an (optional, Voreinstellung ist '0'): ")
     if lock_number == "":
         lock_number = "0"
 
